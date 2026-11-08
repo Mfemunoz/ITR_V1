@@ -1,0 +1,45 @@
+services:
+  itr_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: itr_streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: itr_db
+      DB_USER: itr_user
+      DB_PASSWORD: itr_password
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - itr_network
+
+  db:
+    image: postgres:16-alpine
+    container_name: itr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: itr_db
+      POSTGRES_USER: itr_user
+      POSTGRES_PASSWORD: itr_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U itr_user -d itr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - itr_network
+
+volumes:
+  postgres_data:
+
+networks:
+  itr_network:
+    driver: bridge
