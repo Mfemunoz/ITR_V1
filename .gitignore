@@ -1,0 +1,31 @@
+﻿# Variables y secretos locales
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# Entornos y archivos temporales
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+
+# Archivos de datos locales
+*.xlsx
+*.xls
+*.csv
+*.parquet
+
+# Jenkins y Docker locales
+jenkins_home/
