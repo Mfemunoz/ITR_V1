@@ -1,0 +1,50 @@
+﻿services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: docker/jenkins/Dockerfile
+    container_name: itr_jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      DOCKER_HOST: tcp://docker:2376
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /certs/client
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - jenkins_docker_certs:/certs/client:ro
+    depends_on:
+      docker:
+        condition: service_healthy
+    networks:
+      - jenkins_network
+
+  docker:
+    image: docker:27-dind
+    container_name: itr_jenkins_docker
+    privileged: true
+    restart: unless-stopped
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
+    volumes:
+      - jenkins_docker_certs:/certs/client
+      - jenkins_docker_data:/var/lib/docker
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - jenkins_network
+
+volumes:
+  jenkins_home:
+  jenkins_docker_certs:
+  jenkins_docker_data:
+
+networks:
+  jenkins_network:
+    driver: bridge
